@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Biometric">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/dist/Biometric.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -6,6 +6,7 @@
 package Biometric.Main;
 
 
+import Biometric.Functions.WAVReader;
 import Biometric.Utilities.AmplitudeList;
 import Biometric.Utilities.Bank;
 import Biometric.Utilities.FramesList;
@@ -49,11 +50,21 @@ public class Record  {
        System.out.printf("\n" + "Next record ");
        Register("Record3.wav");*/
         DTW dtw= new DTW();
+       byte[] data = null;
+
+           final ByteArrayOutputStream baout = new ByteArrayOutputStream();
+       WAVReader wr = new WAVReader();
+       AudioInputStream as= wr.getAudioInputStream(new File("Ts.wav"));
+           AudioSystem.write(as, AudioFileFormat.Type.WAVE, baout);
+           as.close();
+           baout.close();
+           data = baout.toByteArray();
         Process test= new Process();
        AudiotoByte audio = new AudiotoByte();
        byte[] table = audio.readWAVAudioFileData("Ts.wav");
       // audio.BytetoString(table);
-       double[] signal= test.BytetoDoubleArray(table);
+
+       double[] signal= test.BytetoDoubleArray(data);
        SaveWave save= new SaveWave();
        AmplitudeList alist = new AmplitudeList();
        SpectrumsList slist = new SpectrumsList();

@@ -130,7 +130,7 @@ public class Process {
         double[]result= new double[a.length];
         for(int i=0;i<a.length;i++)
         {
-            result[i]=a[i];
+            result[i]=a[i]&0xFF;
         }
 
         return result;
