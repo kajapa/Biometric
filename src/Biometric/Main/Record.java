@@ -65,6 +65,14 @@ public class Record  {
       // audio.BytetoString(table);
 
        double[] signal= test.BytetoDoubleArray(data);
+       System.out.println("=======================");
+       for (int i = 16 + 28; i < 1016 + 28; i+=2) {
+           double samp = signal[i] + 256 * signal[i+1];
+          // if (signal[i+1] >= 128) samp = -(signal[i] + 256 * (256 - signal[i+1]));
+           if (signal[i+1] >= 128) samp = -(65536 - (signal[i] + 256 * signal[i+1]));
+           samp = samp / 32768;
+           System.out.println(samp);
+       }
        SaveWave save= new SaveWave();
        AmplitudeList alist = new AmplitudeList();
        SpectrumsList slist = new SpectrumsList();

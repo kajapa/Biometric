@@ -52,10 +52,10 @@ public class Process {
     }
     public List<Complex[]> PowerSpectrum(List<double[]> frames){
 
-        for(int i=0;i<frames.get(0).length;++i)
+        /*for(int i=0;i<frames.get(0).length;++i)
         {
             System.out.println(frames.get(0)[i]);
-        }
+        }*/
         FastFourierTransformer fft = new FastFourierTransformer(DftNormalization.STANDARD);
         Complex result[] ;
         List<Complex[]> spectrum = new ArrayList<Complex[]>();
