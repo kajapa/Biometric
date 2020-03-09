@@ -6,6 +6,7 @@
 package Biometric.Main;
 
 
+import Biometric.AudioModifiers.CorrectInput;
 import Biometric.Functions.WAVReader;
 import Biometric.Utilities.AmplitudeList;
 import Biometric.Utilities.Bank;
@@ -50,6 +51,7 @@ public class Record  {
        System.out.printf("\n" + "Next record ");
        Register("Record3.wav");*/
         DTW dtw= new DTW();
+
        byte[] data = null;
 
            final ByteArrayOutputStream baout = new ByteArrayOutputStream();
@@ -65,14 +67,18 @@ public class Record  {
       // audio.BytetoString(table);
 
        double[] signal= test.BytetoDoubleArray(data);
-       System.out.println("=======================");
+       CorrectInput CI = new CorrectInput(signal);
+       double [] correct = CI.ReturnCorrectInput();
+
+       /*System.out.println("=======================");
        for (int i = 16 + 28; i < 1016 + 28; i+=2) {
            double samp = signal[i] + 256 * signal[i+1];
           // if (signal[i+1] >= 128) samp = -(signal[i] + 256 * (256 - signal[i+1]));
            if (signal[i+1] >= 128) samp = -(65536 - (signal[i] + 256 * signal[i+1]));
            samp = samp / 32768;
            System.out.println(samp);
-       }
+       }*/
+
        SaveWave save= new SaveWave();
        AmplitudeList alist = new AmplitudeList();
        SpectrumsList slist = new SpectrumsList();
@@ -89,7 +95,7 @@ public class Record  {
        //audio.BytetoString(table);
 
 
-       flist.Frames = test.SliceSignal(signal, 512,256);
+       flist.Frames = test.SliceSignal(correct, 512,256);
        slist.Samples = test.PowerSpectrum(flist.Frames);
 
 
@@ -108,9 +114,9 @@ public class Record  {
        /*System.out.printf("\n" + "Suma DTW " + dtw.Compare(CaptureSound("Record1.wav"),CaptureSound("Record2.wav")));
        System.out.printf("\n" + "Suma DTW " + dtw.Compare(CaptureSound("Record1.wav"),CaptureSound("Record3.wav")));*/
 
-      // System.out.printf("\n" + "Sum DTW 1st and 2nd sample " + dtw.Compare(CaptureSound("Record1.wav"),CaptureSound("Record2.wav")));
-      // System.out.printf("\n" + "Sum DTW 2nd and 3rd sample " + dtw.Compare(CaptureSound("Record2.wav"),CaptureSound("Record3.wav")));
-      // System.out.printf("\n" + "Sum DTW 1st and 3rd sample " + dtw.Compare(CaptureSound("Record1.wav"),CaptureSound("Record3.wav")));
+       System.out.printf("\n" + "Sum DTW 1st and 2nd sample " + dtw.Compare(CaptureSound("Record1.wav"),CaptureSound("Record2.wav")));
+       System.out.printf("\n" + "Sum DTW 2nd and 3rd sample " + dtw.Compare(CaptureSound("Record2.wav"),CaptureSound("Record3.wav")));
+       System.out.printf("\n" + "Sum DTW 1st and 3rd sample " + dtw.Compare(CaptureSound("Record1.wav"),CaptureSound("Record3.wav")));
 
       // System.out.printf("\n" + "Minimum " + dtw.GetMin(200,10,500));
        }
@@ -125,6 +131,7 @@ public static double[] CaptureSound(String file) {
 
     AudiotoByte audio = new AudiotoByte();
     SpectrumsList slist = new SpectrumsList();
+    AmplitudeList alist = new AmplitudeList();
     Process test = new Process();
     byte[] table = audio.readWAVAudioFileData(file);
 
@@ -133,21 +140,22 @@ public static double[] CaptureSound(String file) {
     SaveWave save= new SaveWave();
     save.Save(table,"RS1.wav");
 
-    RemoveSilence removeSilence = new RemoveSilence(test.BytetoDoubleArray(table),44100);
-
+    //RemoveSilence removeSilence = new RemoveSilence(test.BytetoDoubleArray(table),44100);
+    CorrectInput CI = new CorrectInput(test.BytetoDoubleArray(table));
 
     //RemoveSilence remove= new RemoveSilence(test.BytetoDoubleArray(table),44100);
-    double [] tabledouble= removeSilence.remove();
+   // double [] tabledouble= removeSilence.remove();
     FramesList flist = new FramesList();
     //audio.BytetoString(table);
 
-
-    flist.Frames = test.SliceSignal(tabledouble, 512,256);
+double [] correct = CI.ReturnCorrectInput();
+    flist.Frames = test.SliceSignal(correct, 512,256);
     slist.Samples = test.PowerSpectrum(flist.Frames);
+    alist.AList=test.ReturnAmplitude(slist.Samples);
 
     System.out.printf("\n" + "Size of list: " + flist.Frames.size());
     Bank bank = new Bank();
-    double[] banks = test.ConvertFFTBin(bank.filters, 44100, slist.Samples);
+    double[] banks = test.ConvertFFTBin(bank.filters, 44100, alist.AList);
     double[] logbank = test.LogEnergy(banks);
     DCT dct = new DCT();
     dct.transform(logbank);

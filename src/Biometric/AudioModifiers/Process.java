@@ -88,14 +88,15 @@ public class Process {
         }
         return result;
     }
-    public double[] ConvertFFTBin(double[] bank,double sampleRate,List<Complex[]> list){
+    public double[] ConvertFFTBin(double[] bank,double sampleRate,List<double[]> list){
     double[] FFTBin= new double[bank.length];
         for(int i=0;i<bank.length;i++)
         {
-            for(Complex[] com :list){
+            for(double[] com :list){
                 FFTBin[i]+=Math.floor((com.length+1)*bank[i]/sampleRate);
 
             }
+
         }
 
 

@@ -5,10 +5,7 @@
  */
 package Biometric.Functions;
 
-/**
- *
- * @author Patryk
- */
+
 public class FFT {
     public static double[] fft(final double[] inputReal, double[] inputImag,
                            boolean DIRECT) {
@@ -22,7 +19,7 @@ public class FFT {
     // Here I check if n is a power of 2. If exist decimals in ld, I quit
     // from the function returning null.
     if (((int) ld) - ld != 0) {
-        System.out.println("The number of elements is not a power of 2.");
+       // System.out.println("The number of elements is not a power of 2.");
         return null;
     }
 
