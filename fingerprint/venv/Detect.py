@@ -4,6 +4,7 @@ from LoadImages import *
 from MaskCrop import *
 from Segmentation import *
 from MedianBlur1D import *
+from MeshConstructor import *
 
 def GetStartPoint():
     startPoint = (10, 10)
@@ -68,49 +69,48 @@ while True:
         right = MedianBlur1D(right, 4)
         #print(str(len(left)) + " " + str(len(right)) + " " + str(crop.shape[0]) + " " + str(crop.shape[1])) #DEBUG
 
-        #przygotowanie obrazu do graficznego przedstawienia
-        #erode = cv2.erode(crop, np.ones((3, 3), np.uint8))
-        #dyl = cv2.dilate(erode, np.ones((2, 2), np.uint8))
+        #out = cv2.erode(crop, np.ones((2, 2), np.uint8))
+        #out = cv2.dilate(out, np.ones((2, 2), np.uint8))
 
-        #equ = cv2.equalizeHist(crop)
-        #res = np.hstack((crop, equ))
+        #wykrywanie krawędzi i zamiana obrzu na binarny
+        edge = cv2.GaussianBlur(crop, (3, 3), 0)
+        laplacian = cv2.Laplacian(edge, cv2.CV_64F)
+        #cv2.imshow('edge', laplacian)
 
-        #clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(16, 16))
-        #res = clahe.apply(crop)
-
-        #contrast = 0.8
-
-        # for y in range(crop.shape[0]):
-        #     for x in range(crop.shape[1]):
-        #         if(x < left[y] or x > right[y]):
-        #             crop[y, x] = ((((crop[y, x] / 255.0) - 0.5) * contrast) + 0.5) * 255.0;
-
-        testColorImage = cv2.cvtColor(crop, cv2.COLOR_GRAY2BGR)
+        #przygotowanie podglądu
+        testColorImage = cv2.cvtColor(edge, cv2.COLOR_GRAY2BGR)
         for y in range(testColorImage.shape[0]):
             for x in range(testColorImage.shape[1]):
                 if(x < left[y] or x > right[y]):
                     testColorImage[y, x, 0] = 0
                     testColorImage[y, x, 1] = 0
                     testColorImage[y, x, 2] = 255
+                elif(laplacian[y, x] < 1):
+                    testColorImage[y, x, 0] = 0
+                    testColorImage[y, x, 1] = 0
+                    testColorImage[y, x, 2] = 0
+                else:
+                    testColorImage[y, x, 0] = 255
+                    testColorImage[y, x, 1] = 255
+                    testColorImage[y, x, 2] = 255
 
-        meshDensity = 5
 
+        #rysowanie siatki punktów
+        meshDensity = 4
         for y in range(testColorImage.shape[0]):
             for x in range(testColorImage.shape[1]):
                 if(x > left[y] and x < right[y]):
-                    if(crop[y, x] < 150):
+                    if(testColorImage[y, x, 0] > 0):
                         if (x % meshDensity == 0 and y % meshDensity == 0):
-                            testColorImage[y, x, 0] = 255
-                            testColorImage[y, x, 1] = 0
-                            testColorImage[y, x, 2] = 0
+                            mesh.append((y, x))
 
-        # for y in range(testColorImage.shape[0]):
-        #     for x in range(testColorImage.shape[1]):
-        #         if(x > left[y] and x < right[y]):
-        #             if(erode[y, x] < 200):
-        #                 testColorImage[y, x, 0] = 255
-        #                 testColorImage[y, x, 1] = 0
-        #                 testColorImage[y, x, 2] = 0
+        #edycja siatki punktów
+        ValidGridPosition(testColorImage, mesh)
+
+        for m in range(len(mesh)):
+            testColorImage[mesh[m][0], mesh[m][1], 0] = 255
+            testColorImage[mesh[m][0], mesh[m][1], 1] = 0
+            testColorImage[mesh[m][0], mesh[m][1], 2] = 0
 
         cv2.imshow('test', testColorImage)
 
