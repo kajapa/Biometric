@@ -1,10 +1,7 @@
 import cv2
 import numpy as np
 from LoadImages import *
-from MaskCrop import *
-from Segmentation import *
-from MedianBlur1D import *
-from MeshConstructor import *
+from PrepareImage import *
 
 def GetStartPoint():
     startPoint = (10, 10)
@@ -39,79 +36,45 @@ images = LoadImagesFromFolder('./../../../probki/DB1_B/')
 #images += LoadImagesFromFolder('./../../../probki/DB3_B/')
 #images += LoadImagesFromFolder('./../../../probki/DB4_B/')
 imageIndex = 0
-
-print(len(images))
+printIndex = 0
+sizeX = 0
+sizeY = 0
 
 while True:
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
     cv2.imshow('image', images[imageIndex])
 
     key = cv2.waitKey(1) & 0xFF
-    if key == ord('q'):
+    if key == ord('q'): #wyłącz aplikację
         break
-    elif key == ord('a'):
+    elif key == ord('a'): #poprzedni pocisk
         if imageIndex > 0:
             imageIndex -= 1
-    elif key == ord('d'):
+    elif key == ord('d'): #następny odcisk
         if imageIndex < len(images) - 1:
             imageIndex += 1
-    elif key == ord('w'):
-        orginal = images[imageIndex].copy()
-        gray = cv2.cvtColor(orginal, cv2.COLOR_BGR2GRAY)
-        #ograniczenie rozmiaru przetwarzanego obrazu do samego odcisku palca (wykasowanie tła)
-        crop = MaskCrop(gray)
-        #zastosowanie filtru medianowego w celu usunięcia z obrazu porów
-        crop = cv2.medianBlur(crop, 3)
-        #segmentacjia obrazu palca tak aby uzystakć tylko obrys palca
-        left, right = FingerprintSegmentation(crop, 230)
-        #wygładzanie żeby elementy siatki
-        left = MedianBlur1D(left, 4)
-        right = MedianBlur1D(right, 4)
-        #print(str(len(left)) + " " + str(len(right)) + " " + str(crop.shape[0]) + " " + str(crop.shape[1])) #DEBUG
-
-        #out = cv2.erode(crop, np.ones((2, 2), np.uint8))
-        #out = cv2.dilate(out, np.ones((2, 2), np.uint8))
-
-        #wykrywanie krawędzi i zamiana obrzu na binarny
-        edge = cv2.GaussianBlur(crop, (3, 3), 0)
-        laplacian = cv2.Laplacian(edge, cv2.CV_64F)
-        #cv2.imshow('edge', laplacian)
-
-        #przygotowanie podglądu
-        testColorImage = cv2.cvtColor(edge, cv2.COLOR_GRAY2BGR)
-        for y in range(testColorImage.shape[0]):
-            for x in range(testColorImage.shape[1]):
-                if(x < left[y] or x > right[y]):
-                    testColorImage[y, x, 0] = 0
-                    testColorImage[y, x, 1] = 0
-                    testColorImage[y, x, 2] = 255
-                elif(laplacian[y, x] < 1):
-                    testColorImage[y, x, 0] = 0
-                    testColorImage[y, x, 1] = 0
-                    testColorImage[y, x, 2] = 0
-                else:
-                    testColorImage[y, x, 0] = 255
-                    testColorImage[y, x, 1] = 255
-                    testColorImage[y, x, 2] = 255
-
-
-        #rysowanie siatki punktów
-        meshDensity = 4
-        for y in range(testColorImage.shape[0]):
-            for x in range(testColorImage.shape[1]):
-                if(x > left[y] and x < right[y]):
-                    if(testColorImage[y, x, 0] > 0):
-                        if (x % meshDensity == 0 and y % meshDensity == 0):
-                            mesh.append((y, x))
-
-        #edycja siatki punktów
-        ValidGridPosition(testColorImage, mesh)
-
-        for m in range(len(mesh)):
-            testColorImage[mesh[m][0], mesh[m][1], 0] = 255
-            testColorImage[mesh[m][0], mesh[m][1], 1] = 0
-            testColorImage[mesh[m][0], mesh[m][1], 2] = 0
-
-        cv2.imshow('test', testColorImage)
+    elif key == ord('z'): #poprzednia linia papilarna
+        if printIndex > 0:
+            printIndex -= 1
+        fpimg = np.zeros((sizeY, sizeX, 1), dtype="uint8")
+        for fp in fingerprints[printIndex]:
+            fpimg[fp[0], fp[1]] = 255
+        #cv2.imshow('finger print', fpimg)
+        fpgrid = GenerateGrid(fpimg, fingerprints[printIndex])
+        cv2.imshow('fpgrid print', fpgrid)
+    elif key == ord('x'): #następna linia papilarna
+        if printIndex < len(fingerprints) - 1:
+            printIndex += 1
+        fpimg = np.zeros((sizeY, sizeX, 1), dtype="uint8")
+        for fp in fingerprints[printIndex]:
+            fpimg[fp[0], fp[1]] = 255
+        #cv2.imshow('finger print', fpimg)
+        fpgrid = GenerateGrid(fpimg, fingerprints[printIndex])
+        cv2.imshow('fpgrid print', fpgrid)
+    elif key == ord('e'):
+        FingerPrint2File(sizeY, sizeX, imageIndex)
+    elif key == ord('w'): #wykryj linie papilarne
+        img = PrepareImage(images[imageIndex])
+        cv2.imshow('test', img)
 
 cv2.destroyAllWindows()
