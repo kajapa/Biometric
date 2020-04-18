@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import math
 
 mesh = [] #siatka do pierwszer próbu zbudowania siatki
 fingerprints = [] #wykryte poszczególne linie papilarne
@@ -146,6 +147,15 @@ def LineFromPoints(P, Q):
 
     return str(a)# + "\n" + str(b)
 
+def NormalFromPints(P, Q):
+    x = Q[0] - P[0]
+    y = Q[1] - P[1]
+    magnitude = math.sqrt(x * x + y * y)
+    x = x / magnitude
+    y = y / magnitude
+
+    return str(x) + " " + str(y)
+
 def GoDeeper(lastConnection, currConnection, connections, level):
     if(level <= 0):
         return 1
@@ -187,6 +197,8 @@ def FingerPrint2File(sizeY, sizeX, imageIndex):
 
     f = open("./db/" + str(imageIndex) + ".txt", "w+")
 
+    f.write(str(sizeX) + " " + str(sizeY) + "\n")
+
     for fingerprintLine in fingerprints:
         fpimg = np.zeros((sizeY, sizeX, 1), dtype="uint8")
         for fp in fingerprintLine:
@@ -227,8 +239,8 @@ def FingerPrint2File(sizeY, sizeX, imageIndex):
                 if (val > 2):
                     f.write(str(fingerprintMesh[c2][0]) + "\n" + str(fingerprintMesh[c2][1]) + "\n")
                     for c2 in connections[c1]:
-                        f.write(LineFromPoints(fingerprintMesh[c2], fingerprintMesh[connections[connections[c2][0]][0]]) + "\n")
+                        f.write(NormalFromPints(fingerprintMesh[c2], fingerprintMesh[connections[connections[c2][0]][0]]) + "\n")
 
-                    f.write("\n")
+                    #f.write("\n")
     f.close()
     return

@@ -72,9 +72,10 @@ while True:
         fpgrid = GenerateGrid(fpimg, fingerprints[printIndex])
         cv2.imshow('fpgrid print', fpgrid)
     elif key == ord('e'):
+        print(str(sizeX) + " " + str(sizeY))
         FingerPrint2File(sizeY, sizeX, imageIndex)
     elif key == ord('w'): #wykryj linie papilarne
-        img = PrepareImage(images[imageIndex])
+        img, sizeX, sizeY = PrepareImage(images[imageIndex])
         cv2.imshow('test', img)
 
 cv2.destroyAllWindows()

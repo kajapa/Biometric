@@ -100,4 +100,4 @@ def PrepareImage(img):
     #     testColorImage[mesh[m][0], mesh[m][1], 1] = 0
     #     testColorImage[mesh[m][0], mesh[m][1], 2] = 0
 
-    return testColorImage
+    return testColorImage, sizeX, sizeY
