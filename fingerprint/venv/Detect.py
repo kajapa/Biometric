@@ -31,7 +31,8 @@ def CheckStop():
 
     return stop;
 
-images = LoadImagesFromFolder('./../../../probki/DB1_B/')
+images = LoadImagesFromFolder('./test_fingerprint/')
+#images = LoadImagesFromFolder('./../../../probki/DB1_B/')
 #images += LoadImagesFromFolder('./../../../probki/DB2_B/')
 #images += LoadImagesFromFolder('./../../../probki/DB3_B/')
 #images += LoadImagesFromFolder('./../../../probki/DB4_B/')
@@ -71,7 +72,7 @@ while True:
         #cv2.imshow('finger print', fpimg)
         fpgrid = GenerateGrid(fpimg, fingerprints[printIndex])
         cv2.imshow('fpgrid print', fpgrid)
-    elif key == ord('e'):
+    elif key == ord('e'): #zapis do pliku
         print(str(sizeX) + " " + str(sizeY))
         FingerPrint2File(sizeY, sizeX, imageIndex)
     elif key == ord('w'): #wykryj linie papilarne

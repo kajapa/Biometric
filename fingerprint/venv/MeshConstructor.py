@@ -1,9 +1,13 @@
 import cv2
 import numpy as np
 import math
+import sys
+
+sys.setrecursionlimit(10000)
 
 mesh = [] #siatka do pierwszer próbu zbudowania siatki
 fingerprints = [] #wykryte poszczególne linie papilarne
+minutiaeEnd = [] #kandydaci na minucje (krańce poszczególnych lini)
 minutiaeCandidate = [] #kandydaci na minucję (piksele w otoczeniu 3 innych białych)
 minutiaeStar = [] #kandydaci na minucję (piksele w otoczeniu 4 innych białych)
 minFingerprintLen = 15 #minimalna długość lini papilarnej (mniejsz są wyrzucane)
@@ -64,9 +68,10 @@ def DFS2(img, y, x, currprint):
     if (y < img.shape[0] - 1 and img[y + 1, x] > 0):
         DFS2(img, y + 1, x, currprint)
 
-def FindMinutiae(img):
+def FindMinutiae(img): #podział minucji na typy
     minutiaeCandidate.clear()
     minutiaeStar.clear()
+    minutiaeEnd.clear()
     for fp in fingerprints:
         for f in fp:
             sum = 0
@@ -79,15 +84,18 @@ def FindMinutiae(img):
                     sum = sum + 1
                 if (img[f[0], f[1] + 1]):
                     sum = sum + 1
-                if(sum == 3):
+                if(sum == 3): #styka się z trzema punktami
                     minutiaeCandidate.append((f[0], f[1]))
-                if (sum == 4):
+                if(sum == 4): #styka się z czterema punktami
                     minutiaeStar.append((f[0], f[1]))
+                if(sum == 1): #styka się tylko z jednym (jest zakończeniem)
+                    minutiaeEnd.append((f[0], f[1]))
 
-def GenerateGrid(fpimg, fingerprintLine):
+def GenerateGrid(fpimg, fingerprintLine): #dzili poszczególne linie na zbiór punktów
     y = fpimg.shape[0]
     x = fpimg.shape[1]
     img = np.zeros((fpimg.shape[0], fpimg.shape[1], 1), dtype="uint8")
+    #wyznaczanie miejsca początku dla danej lini papilarnej
     for fp in fingerprintLine:
         if(fp[1] < x):
             y = fp[0]
@@ -151,8 +159,12 @@ def NormalFromPints(P, Q):
     x = Q[0] - P[0]
     y = Q[1] - P[1]
     magnitude = math.sqrt(x * x + y * y)
-    x = x / magnitude
-    y = y / magnitude
+    if(magnitude == 0):
+        x = 0
+        y = 0
+    else:
+        x = x / magnitude
+        y = y / magnitude
 
     return str(x) + " " + str(y)
 
@@ -177,6 +189,9 @@ def GoDeeper(lastConnection, currConnection, connections, level):
 
     return 1
 
+# zbudowanie siatki, żeby nie trzeba było pracować na wszytkich pikselach, a sama siatka lepiej oddaje kierunek w jakim podąrzają linie
+# obraz wejściowy, Y punktu startowego, X punktu startowego, tablica wynikowa,
+# dokładność siatki, zmienna pomocnicza iterazyjna po kolejnych zagłębieniach rekursywnych, kóry z elementów siatki jest ojcem
 def DFS2Grid(img, y, x, mesh, distance, currdistance, father):
     img[y, x] = 0
     index = father
@@ -199,7 +214,7 @@ def FingerPrint2File(sizeY, sizeX, imageIndex):
 
     f.write(str(sizeX) + " " + str(sizeY) + "\n")
 
-    for fingerprintLine in fingerprints:
+    for fingerprintLine in fingerprints: #przejście po wszystkich liniach papilarnych
         fpimg = np.zeros((sizeY, sizeX, 1), dtype="uint8")
         for fp in fingerprintLine:
             fpimg[fp[0], fp[1]] = 255
@@ -216,17 +231,17 @@ def FingerPrint2File(sizeY, sizeX, imageIndex):
                 x = fp[1]
 
         fingerprintMesh.clear()
-        DFS2Grid(fpimg, y, x, fingerprintMesh, 4, 4, -1)
+        DFS2Grid(fpimg, y, x, fingerprintMesh, 4, 4, -1) #przetworzenie pikseli na siatkę
         connections = []
 
-        for fp in fingerprintMesh:
+        for fp in fingerprintMesh: #przygotowanie tablicy połączeń
             connections.append([])
 
-        for fp in range(len(fingerprintMesh)):
+        for fp in range(len(fingerprintMesh)): #spisanie wszystkich punktów dla danego punktu które wychodzą (dzieci)
             if (fingerprintMesh[fp][2] >= 0):
                 connections[fingerprintMesh[fp][2]].append(fp)
 
-        for fp in range(len(fingerprintMesh)):
+        for fp in range(len(fingerprintMesh)): #spisanie z którego punktu weszło się do danego punktu (ojciec)
             if (fingerprintMesh[fp][2] >= 0):
                 connections[fp].append(fingerprintMesh[fp][2])
 
@@ -235,12 +250,15 @@ def FingerPrint2File(sizeY, sizeX, imageIndex):
                 val = 0
                 for c2 in connections[c1]:  # sprawdzenie długości poszczególnych minucji i omijanie tych za krótkich
                     val = val + GoDeeper(c1, c2, connections, 2)
-
                 if (val > 2):
+                    f.write(str(len(connections[c1])) + "\n")
                     f.write(str(fingerprintMesh[c2][0]) + "\n" + str(fingerprintMesh[c2][1]) + "\n")
                     for c2 in connections[c1]:
                         f.write(NormalFromPints(fingerprintMesh[c2], fingerprintMesh[connections[connections[c2][0]][0]]) + "\n")
+            if(len(connections[c1]) == 1):
+                f.write("1\n")
+                f.write(str(fingerprintMesh[c1][0]) + "\n" + str(fingerprintMesh[c1][1]) + "\n")
+                f.write(NormalFromPints(fingerprintMesh[c1], fingerprintMesh[connections[c1][0]]) + "\n")
 
-                    #f.write("\n")
     f.close()
     return
