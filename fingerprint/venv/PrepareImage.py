@@ -90,7 +90,7 @@ def PrepareImage(img): #przetwarzania obrazu lini papilarnej na szkielet
             testColorImage[mc[0], mc[1], 1] = 0
             testColorImage[mc[0], mc[1], 2] = 0
 
-    return testColorImage, sizeX, sizeY
+    return testColorImage, sizeX, sizeY, left, right
 
 def FillPrintHole(img, step): #wypełnianie pzestrzeni/porów wewnątrz linii
     newImg = img.copy()

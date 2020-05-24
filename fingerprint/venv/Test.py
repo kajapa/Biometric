@@ -34,37 +34,81 @@ def Normal(x1, x2, y1, y2, distance):
 def DotProduct(x1, x2, y1, y2):
     return x1 * x2 + y1 * y2
 
+def Magnitude(x, y):
+    return math.sqrt(x * x + y * y)
+
 def ComparePrints(minutiaePattern, distancesPattern, positionsPattern, normalsPattern, minutiae, distances, positions, normals):
     angleDifference = 5
     distanceDiffrence = 10
-    sum = 0
-    for angle in range(0, 32, 2):
-        currangle = angle - 16
-        normalsSum = 0
-        for pattern in range(len(normalsPattern)):
-            degreesPattern = (math.acos(DotProduct(normalsPattern[pattern][0], 1, normalsPattern[pattern][1], 0)) * 180 * math.pi) % 360
-            degreesPattern = degreesPattern + currangle
-            for current in range(len(normals)): #porównywanie kontów
-                degrees = (math.acos(DotProduct(normals[current][0], 1, normals[current][1], 0)) * 180 * math.pi) % 360
-                dp = degreesPattern
-                if(dp >= 360 - angleDifference):
-                    dp = dp - 90
-                    degrees = degrees - 90
-                if (dp <= angleDifference):
-                    dp = dp + 90
-                    degrees = degrees + 90
+    matchAmount = 0
 
-                d = math.fabs(dp - degrees)
-                if(d < angleDifference): #porównywanie odległości poszczególnych elementów
-                    distanceDiff = math.fabs(distancesPattern[pattern] - distances[current])
-                    if(distanceDiff <= distanceDiffrence):
-                        normalsSum = normalsSum + 1
+    # podział minucji względem typów ponieważ najpierw łatwiej jest wykluczać odciski poprzez dopasowanie bardzie skomplikowanych minucji
+    minutiaePattern3Match = []
+    minutiaePattern1Match = []
+    for m in minutiaePattern:
+        if(len(m) == 3):
+            minutiaePattern3Match.append(m)
+        if(len(m) == 1):
+            minutiaePattern1Match.append(m)
+    minutiae3Match = []
+    minutiae1Match = []
+    for m in minutiaePattern:
+        if (len(m) == 3):
+            minutiae3Match.append(m)
+        if (len(m) == 1):
+            minutiae1Match.append(m)
 
-        sum = (len(normals) // 4) * 3
-        if(normalsSum > sum):
-            break
+    for m in minutiaePattern3Match:
+        alpha = DotProduct(m[0][0], m[1][0], m[0][1], m[1][1]) / (Magnitude(m[0][0], m[0][1]) * Magnitude(m[1][0], m[1][1]))
+        betha = DotProduct(m[1][0], m[2][0], m[1][1], m[2][1]) / (Magnitude(m[1][0], m[1][1]) * Magnitude(m[2][0], m[2][1]))
+        gamma = DotProduct(m[2][0], m[0][0], m[2][1], m[0][1]) / (Magnitude(m[2][0], m[2][1]) * Magnitude(m[0][0], m[0][1]))
 
-    return (normalsSum > sum)
+        alpha2 = 0
+        betha2 = 0
+        gamma2 = 0
+        for mp in minutiae3Match:
+            alpha2 = DotProduct(mp[0][0], mp[1][0], mp[0][1], mp[1][1]) / (Magnitude(mp[0][0], mp[0][1]) * Magnitude(mp[1][0], mp[1][1]))
+            betha2 = DotProduct(mp[1][0], mp[2][0], mp[1][1], mp[2][1]) / (Magnitude(mp[1][0], mp[1][1]) * Magnitude(mp[2][0], mp[2][1]))
+            gamma2 = DotProduct(mp[2][0], mp[0][0], mp[2][1], mp[0][1]) / (Magnitude(mp[2][0], mp[2][1]) * Magnitude(mp[0][0], mp[0][1]))
+
+            if(equalNear(alpha, alpha2, 0.01) and equalNear(betha, betha2, 0.01) and equalNear(gamma, gamma2, 0.01)):
+                #przekręć
+                break
+            if(equalNear(alpha, betha2, 0.01) and equalNear(betha, gamma2, 0.01) and equalNear(gamma, alpha2, 0.01)):
+                break
+            if(equalNear(alpha, gamma2, 0.01) and equalNear(betha, alpha2, 0.01) and equalNear(gamma, betha2, 0.01)):
+                break
+
+    # for angle in range(0, 32, 2):
+    #     currangle = angle - 16
+    #     normalsSum = 0
+    #     for pattern in range(len(normalsPattern)):
+    #         degreesPattern = (math.acos(DotProduct(normalsPattern[pattern][0], 1, normalsPattern[pattern][1], 0)) * 180 * math.pi) % 360
+    #         degreesPattern = degreesPattern + currangle
+    #         for current in range(len(normals)): #porównywanie kontów
+    #             degrees = (math.acos(DotProduct(normals[current][0], 1, normals[current][1], 0)) * 180 * math.pi) % 360
+    #             dp = degreesPattern
+    #             if(dp >= 360 - angleDifference):
+    #                 dp = dp - 90
+    #                 degrees = degrees - 90
+    #             if (dp <= angleDifference):
+    #                 dp = dp + 90
+    #                 degrees = degrees + 90
+    #
+    #             d = math.fabs(dp - degrees)
+    #             if(d < angleDifference): #porównywanie odległości poszczególnych elementów
+    #                 distanceDiff = math.fabs(distancesPattern[pattern] - distances[current])
+    #                 if(distanceDiff <= distanceDiffrence):
+    #                     normalsSum = normalsSum + 1
+    #
+    #     sum = (len(normals) // 4) * 3
+    #     if(normalsSum > sum):
+    #         break
+
+    return str(matchAmount) + " " + str(len(minutiaePattern)) + " " + (matchAmount / len(minutiaePattern))
+
+def equalNear(a, b, diff):
+    return  math.fabs(a - b) < diff
 
 #images = LoadImagesFromFolder('./../../../probki/DB1_B/')
 images = LoadImagesFromFolder('./test_fingerprint/')
@@ -72,6 +116,8 @@ images = LoadImagesFromFolder('./test_fingerprint/')
 imageIndex = 0
 sizeX = 0
 sizeY = 0
+leftBorder = []
+rightBorder = []
 
 while True:
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
@@ -87,10 +133,10 @@ while True:
         if imageIndex < len(images) - 1:
             imageIndex += 1
     elif key == ord('w'): #przetestuj
-        img, sizeX, sizeY = PrepareImage(images[imageIndex])
+        img, sizeX, sizeY, leftBorder, rightBorder = PrepareImage(images[imageIndex])
         cv2.imshow('test', img)
 
-        FingerPrint2File(sizeY, sizeX, "TEST")
+        FingerPrint2File(sizeY, sizeX, "TEST", leftBorder, rightBorder)
 
         texts = LoadTextsFromFolder('./db/')
         print("-------test-------")
@@ -112,18 +158,20 @@ while True:
                 #print(line)
                 type = int(lines[line])
                 positions.append((int(lines[line + 1]), int(lines[line + 2])))
+                minutiaTemp = []
                 minutia = (lines[line + 3][0:-1]).split(" ")
-                minutiae.append((float(minutia[0]), float(minutia[1])))
+                minutiaTemp.append((float(minutia[0]), float(minutia[1])))
                 if type >= 2:
                     minutia = (lines[line + 4][0:-1]).split(" ")
-                    minutiae.append((float(minutia[0]), float(minutia[1])))
+                    minutiaTemp.append((float(minutia[0]), float(minutia[1])))
                 if type >= 3:
                     minutia = (lines[line + 5][0:-1]).split(" ")
-                    minutiae.append((float(minutia[0]), float(minutia[1])))
+                    minutiaTemp.append((float(minutia[0]), float(minutia[1])))
                 if type >= 4:
                     minutia = (lines[line + 6][0:-1]).split(" ")
-                    minutiae.append((float(minutia[0]), float(minutia[1])))
+                    minutiaTemp.append((float(minutia[0]), float(minutia[1])))
 
+                minutiae.append(minutiaTemp)
                 distances.append(Distance2D(width / 2, positions[len(positions) - 1][0], height / 2, positions[len(positions) - 1][1]))
                 normals.append(Normal(width / 2, positions[len(positions) - 1][0], height / 2, positions[len(positions) - 1][1], distances[len(distances) - 1]))
                 line = line + type + 3

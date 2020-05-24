@@ -208,7 +208,7 @@ def DFS2Grid(img, y, x, mesh, distance, currdistance, father):
     if(y < img.shape[0] - 1 and img[y + 1, x] > 0):
         DFS2Grid(img, y + 1, x, mesh, distance, currdistance + 1, index)
 
-def FingerPrint2File(sizeY, sizeX, imageIndex):
+def FingerPrint2File(sizeY, sizeX, imageIndex, leftBorder, rightBorder):
 
     f = open("./db/" + str(imageIndex) + ".txt", "w+")
 
@@ -250,15 +250,19 @@ def FingerPrint2File(sizeY, sizeX, imageIndex):
                 val = 0
                 for c2 in connections[c1]:  # sprawdzenie długości poszczególnych minucji i omijanie tych za krótkich
                     val = val + GoDeeper(c1, c2, connections, 2)
-                if (val > 2):
+                if (val > 2): #zapis minucji większą ilością minucji niż 2
                     f.write(str(len(connections[c1])) + "\n")
                     f.write(str(fingerprintMesh[c2][0]) + "\n" + str(fingerprintMesh[c2][1]) + "\n")
                     for c2 in connections[c1]:
                         f.write(NormalFromPints(fingerprintMesh[c2], fingerprintMesh[connections[connections[c2][0]][0]]) + "\n")
-            if(len(connections[c1]) == 1):
-                f.write("1\n")
-                f.write(str(fingerprintMesh[c1][0]) + "\n" + str(fingerprintMesh[c1][1]) + "\n")
-                f.write(NormalFromPints(fingerprintMesh[c1], fingerprintMesh[connections[c1][0]]) + "\n")
+            if(len(connections[c1]) == 1): #zapisanie minucji z jedną normalną (zakończeń)
+                if(fingerprintMesh[c1][0] > 10 #ograniczenie od góry
+                and fingerprintMesh[c1][0] < len(leftBorder) - 10 # ograniczenie od dołu
+                and fingerprintMesh[c1][1] > leftBorder[fingerprintMesh[c1][0]] + 20 #ograniczenie z lewej
+                and fingerprintMesh[c1][1] < rightBorder[fingerprintMesh[c1][0]] - 20): #ograniczenie z prawej
+                    f.write("1\n")
+                    f.write(str(fingerprintMesh[c1][0]) + "\n" + str(fingerprintMesh[c1][1]) + "\n")
+                    f.write(NormalFromPints(fingerprintMesh[c1], fingerprintMesh[connections[c1][0]]) + "\n")
 
     f.close()
     return

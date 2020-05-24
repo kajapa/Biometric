@@ -40,6 +40,8 @@ imageIndex = 0
 printIndex = 0
 sizeX = 0
 sizeY = 0
+leftBorder = []
+rightBorder = []
 
 while True:
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
@@ -74,9 +76,9 @@ while True:
         cv2.imshow('fpgrid print', fpgrid)
     elif key == ord('e'): #zapis do pliku
         print(str(sizeX) + " " + str(sizeY))
-        FingerPrint2File(sizeY, sizeX, imageIndex)
+        FingerPrint2File(sizeY, sizeX, imageIndex, leftBorder, rightBorder)
     elif key == ord('w'): #wykryj linie papilarne
-        img, sizeX, sizeY = PrepareImage(images[imageIndex])
+        img, sizeX, sizeY, leftBorder, rightBorder = PrepareImage(images[imageIndex])
         cv2.imshow('test', img)
 
 cv2.destroyAllWindows()
