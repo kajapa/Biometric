@@ -55,6 +55,7 @@ def ComparePrints(minutiaePattern, distancesPattern, positionsPattern, normalsPa
     angleDifference = 5
     distanceDiffrence = 10
     similarity = 0 #miara podobieństwa
+    angleMatchAccuracy = 60
     angleAccuracy = 10
     distance3 = 8
     distance1 = 8
@@ -119,24 +120,24 @@ def ComparePrints(minutiaePattern, distancesPattern, positionsPattern, normalsPa
             if(equalNear(alpha, alpha2, angleAccuracy) and equalNear(betha, betha2, angleAccuracy) and equalNear(gamma, gamma2, angleAccuracy)):
                 angleMatch = GetAngle(mp[0], (1,0))#DotProduct(mp[0][0], 1, mp[0][1], 0) / Magnitude(mp[0][0], mp[0][1])
                 angleDifference = angleMatch - anglePattern
-                if(angleDifference > -15 and angleDifference < 15): #jeśli przekręcenie odpowiednio
+                if(angleDifference > -angleMatchAccuracy and angleDifference < angleMatchAccuracy): #jeśli przekręcenie odpowiednio
                     isSuit = True
                     break
             if(equalNear(alpha, betha2, angleAccuracy) and equalNear(betha, gamma2, angleAccuracy) and equalNear(gamma, alpha2, angleAccuracy)):
                 angleMatch = GetAngle(mp[1], (1,0))#DotProduct(mp[1][0], 1, mp[1][1], 0) / Magnitude(mp[1][0], mp[1][1])
                 angleDifference = angleMatch - anglePattern
-                if (angleDifference > -15 and angleDifference < 15):  # jeśli przekręcenie odpowiednio
+                if (angleDifference > -angleMatchAccuracy and angleDifference < angleMatchAccuracy):  # jeśli przekręcenie odpowiednio
                     isSuit = True
                     break
             if(equalNear(alpha, gamma2, angleAccuracy) and equalNear(betha, alpha2, angleAccuracy) and equalNear(gamma, betha2, angleAccuracy)):
                 angleMatch = GetAngle(mp[2], (1,0))#DotProduct(mp[2][0], 1, mp[2][1], 0) / Magnitude(mp[2][0], mp[2][1])
                 angleDifference = angleMatch - anglePattern
-                if (angleDifference > -15 and angleDifference < 15):  # jeśli przekręcenie odpowiednio
+                if (angleDifference > -angleMatchAccuracy and angleDifference < angleMatchAccuracy):  # jeśli przekręcenie odpowiednio
                     isSuit = True
                     break
 
         if(isSuit):
-            similarity = similarity + similarityMultipler3 # +3 do podobieństwa ponieważ jeden element na pewno pasuje
+            similarity = similarity + similarityMultipler3 # +similarityMultipler3 do podobieństwa ponieważ jeden element na pewno pasuje
             mmp3m = -1 #indeks kolejnych minucji z wzoru
             minutiae3MatchRotated = [] #tablica poobracanych normalnych minucji
             positions3MatchRotated = []  #tablica poobracanych pozycji minucji
@@ -208,10 +209,10 @@ def ComparePrints(minutiaePattern, distancesPattern, positionsPattern, normalsPa
                                 similarity = similarity + 1
 
 
-            print(str(similarity) + "/" + str(len(positions3Match) * similarityMultipler3 + len(positions1Match)) + " " + str(similarity / ((len(positions3Match) * similarityMultipler3) + len(positions1Match))) + " angle:" + str(angleDifference))
+            #print(str(similarity) + "/" + str(len(positions3Match) * similarityMultipler3 + len(positions1Match)) + " " + str(similarity / ((len(positions3Match) * similarityMultipler3) + len(positions1Match))) + " angle:" + str(angleDifference))
             similarityList.append(similarity)
         else:
-            print("0/" + str(len(positions3Match) * similarityMultipler3 + len(positions1Match)) + " 0.0")
+            #print("0/" + str(len(positions3Match) * similarityMultipler3 + len(positions1Match)) + " 0.0")
             similarityList.append(0)
 
 
