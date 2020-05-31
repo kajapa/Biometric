@@ -14,7 +14,9 @@ def PrepareImage(img): #przetwarzania obrazu lini papilarnej na szkielet
     # ograniczenie rozmiaru przetwarzanego obrazu do samego odcisku palca (wykasowanie tła)
     crop = MaskCrop(gray)
     # zastosowanie filtru medianowego w celu usunięcia z obrazu porów
+    cv2.imshow('crop', crop)
     crop = cv2.medianBlur(crop, 5)
+    cv2.imshow('blur', crop)
     # segmentacjia obrazu palca tak aby uzystakć tylko obrys palca
     left, right = FingerprintSegmentation(crop, 230)
     # wygładzanie żeby elementy siatki
@@ -27,6 +29,7 @@ def PrepareImage(img): #przetwarzania obrazu lini papilarnej na szkielet
 
     # wykrywanie krawędzi i zamiana obrzu na binarny
     edge = cv2.GaussianBlur(crop, (3, 3), 0)
+    cv2.imshow('edge0', edge)
     laplacian = cv2.Laplacian(edge, cv2.CV_64F)
     cv2.imshow('edge1', laplacian)
     laplacian = FillPrintHole(laplacian, 8).copy()
