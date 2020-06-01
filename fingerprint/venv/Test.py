@@ -209,10 +209,10 @@ def ComparePrints(minutiaePattern, distancesPattern, positionsPattern, normalsPa
                                 similarity = similarity + 1
 
 
-            #print(str(similarity) + "/" + str(len(positions3Match) * similarityMultipler3 + len(positions1Match)) + " " + str(similarity / ((len(positions3Match) * similarityMultipler3) + len(positions1Match))) + " angle:" + str(angleDifference))
+            print(str(similarity) + "/" + str(len(positions3Match) * similarityMultipler3 + len(positions1Match)) + " " + str(similarity / ((len(positions3Match) * similarityMultipler3) + len(positions1Match))) + " angle:" + str(angleDifference))
             similarityList.append(similarity)
         else:
-            #print("0/" + str(len(positions3Match) * similarityMultipler3 + len(positions1Match)) + " 0.0")
+            print("0/" + str(len(positions3Match) * similarityMultipler3 + len(positions1Match)) + " 0.0")
             similarityList.append(0)
 
 
@@ -272,10 +272,10 @@ while True:
         if imageIndex < len(images) - 1:
             imageIndex += 1
     elif key == ord('w'): #przetestuj
-        img, sizeX, sizeY, leftBorder, rightBorder = PrepareImage(images[imageIndex])
-        cv2.imshow('test', img)
+        #img, sizeX, sizeY, leftBorder, rightBorder = PrepareImage(images[imageIndex])
+        #cv2.imshow('test', img)
 
-        FingerPrint2File(sizeY, sizeX, "TEST", leftBorder, rightBorder) #tworzenie pliku z obecnie przeglądanego odcisku
+        #FingerPrint2File(sizeY, sizeX, "TEST", leftBorder, rightBorder) #tworzenie pliku z obecnie przeglądanego odcisku
 
         texts = LoadTextsFromFolder('./db/')
         print("-------test-------")

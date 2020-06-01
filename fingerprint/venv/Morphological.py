@@ -75,7 +75,6 @@ def Dylatation(img):
                         if result[y + ny, x + nx] == 255:  # jeśli jest to zaznacz jako taki do przekolorowania
                             result[y, x] = 50
 
-
     # przekolorowanie
     for y in range(1, result.shape[0] - 1):
         for x in range(1, result.shape[1] - 1):
